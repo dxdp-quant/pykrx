@@ -1,15 +1,16 @@
-from pykrx.website.comm import dataframe_empty_handler
-from pykrx.website.krx.market.ticker import get_stock_ticker_isin, get_stock_ticekr_market
-from pykrx.website.krx.market.core import (개별종목시세, 전종목등락률, PER_PBR_배당수익률_전종목,
+from ....website.comm import dataframe_empty_handler
+from ....website.krx.market.ticker import get_stock_ticker_isin, get_stock_ticekr_market
+from ....website.krx.market.core import (개별종목시세, 전종목등락률, PER_PBR_배당수익률_전종목,
                                            PER_PBR_배당수익률_개별, 전종목시세, 외국인보유량_개별추이,
                                            외국인보유량_전종목, 투자자별_순매수상위종목,
                                            투자자별_거래실적_개별종목_기간합계, 투자자별_거래실적_개별종목_일별추이_일반,
                                            투자자별_거래실적_개별종목_일별추이_상세, 투자자별_거래실적_전체시장_기간합계,
                                            투자자별_거래실적_전체시장_일별추이_일반, 투자자별_거래실적_전체시장_일별추이_상세)
-from pykrx.website.krx.market.core import (개별종목_공매도_종합정보, 개별종목_공매도_거래_전종목, 개별종목_공매도_거래_개별추이,
+from ....website.krx.market.core import (개별종목_공매도_종합정보, 개별종목_공매도_거래_전종목, 개별종목_공매도_거래_개별추이,
                                            투자자별_공매도_거래, 전종목_공매도_잔고, 개별종목_공매도_잔고,
                                            공매도_거래상위_50종목, 공매도_잔고상위_50종목)
-from pykrx.website.krx.market.core import (전체지수기본정보, 개별지수시세, 전체지수등락률, 지수구성종목)
+from ....website.krx.market.core import (전체지수기본정보, 개별지수시세, 전체지수등락률, 지수구성종목)
+from ....website.krx.market.core import (상장종목검색, 전종목기본정보)
 import numpy as np
 import pandas as pd
 from pandas import Series, DataFrame
@@ -251,6 +252,26 @@ def get_market_ticker_and_name(date: str, market: str="KOSPI") -> Series:
     df.columns = ['티커', '종목명']
     df = df.set_index('티커')
     return df['종목명']
+
+
+@dataframe_empty_handler
+def get_market_uplist_info(market: str="KOSPI") -> DataFrame:
+    """종목 정보 반환
+
+    Note:
+        KRX가 20000101 이후의 데이터만을 제공
+
+    Args:
+        market (str): 조회 시장 (KOSPI/KOSDAQ/ALL)
+
+    Returns:
+        Dataframe
+    """
+    market = {"ALL": "ALL", "KOSPI": "STK", "KOSDAQ": "KSQ", "KONEX": "KNX"}. \
+        get(market, "ALL")
+
+    df = 전종목기본정보().fetch(market)
+    return df
 
 
 @dataframe_empty_handler

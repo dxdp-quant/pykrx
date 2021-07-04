@@ -1,5 +1,7 @@
-from pykrx.website import krx
-from pykrx.website import naver
+# from pykrx.website import krx
+# from pykrx.website import naver
+from ..website import krx
+from ..website import naver
 import datetime
 import inspect
 import functools
@@ -7,6 +9,15 @@ import pandas as pd
 from deprecated import deprecated
 from pandas import DataFrame
 
+import warnings
+
+def custom(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        warnings.warn("custom function", UserWarning)
+        return func(*args, **kwargs)
+
+    return wrapper
 
 def market_valid_check(param=None):
     def _market_valid_check(func):
@@ -110,6 +121,20 @@ def get_market_ticker_name(ticker: str) -> str:
         str: 종목명
     """
     return krx.get_stock_name(ticker)
+
+@custom
+def get_market_uplist_info(market: str="KOSPI") -> DataFrame:
+    """상장종목의 목록과 정보 조회
+
+    Args:
+        date   (str, optional): 조회 일자 (YYYYMMDD)
+        market (str, optional): 조회 시장 (KOSPI/KOSDAQ/KONEX/ALL)
+
+    Returns:
+        df: Dataframe
+    """
+
+    return krx.get_market_uplist_info(market)
 
 
 def __get_business_days_0(year: int, month: int):

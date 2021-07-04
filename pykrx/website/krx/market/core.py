@@ -111,6 +111,23 @@ class 전종목시세(KrxWebIo):
         result = self.read(mktId=mktId, trdDd=trdDd)
         return DataFrame(result['OutBlock_1'])
 
+class 전종목기본정보(KrxWebIo):
+    @property
+    def bld(self):
+        return "dbms/MDC/STAT/standard/MDCSTAT01901"
+
+    def fetch(self, mktId: str) -> DataFrame:
+        """[12005] 전종목 기본정보
+
+        Args:
+            mktId (str): 조회 시장 (STK/KSQ/KNX/ALL)
+
+        Returns:
+            DataFrame: 전종목의 기본 정보
+        """
+        result = self.read(mktId=mktId)
+        return DataFrame(result['OutBlock_1'])
+        
 
 class PER_PBR_배당수익률_전종목(KrxWebIo):
     @property
