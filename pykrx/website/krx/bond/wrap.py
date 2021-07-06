@@ -1,5 +1,5 @@
-from pykrx.website.krx.bond.core import MKD40013, MKD40038
-from pykrx.website.comm import dataframe_empty_handler
+from ....website.krx.bond.core import MKD40013, MKD40038
+from ....website.comm import dataframe_empty_handler
 
 
 class KrxBond:

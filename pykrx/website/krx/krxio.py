@@ -1,9 +1,13 @@
 import io
 from abc import abstractmethod
-from pykrx.website.comm.webio import Get, Post
+from ...website.comm.webio import Post
+from .krx_proxy import Proxy
 import logging
 
 class KrxWebIo(Post):
+    def __init__(self):
+        super().__init__( Proxy().get() )
+
     def read(self, **params):
         params.update(bld=self.bld)
         resp = super().read(**params)

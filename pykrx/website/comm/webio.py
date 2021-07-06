@@ -4,10 +4,19 @@ from abc import abstractmethod
 
 class Get:
     def __init__(self):
-        self.headers = {"User-Agent": "Mozilla/5.0"}
+        self.headers = { "User-Agent": "Mozilla/5.0" }
+        self.proxies = { }
+    def __init__(self, proxies:dict):
+        self.headers = { "User-Agent": "Mozilla/5.0" }
+        self.proxies = proxies 
 
     def read(self, **params):
-        resp = requests.get(self.url, headers=self.headers, params=params)
+        if not self.headers:
+            raise ValueError("Headers for read() is empty")
+        if self.proxies:
+            resp = requests.get(self.url, headers=self.headers, data=params, proxies=self.proxies)
+        else:
+            resp = requests.get(self.url, headers=self.headers, data=params)
         return resp
 
     @property
@@ -18,10 +27,20 @@ class Get:
 
 class Post:
     def __init__(self):
-        self.headers = {"User-Agent": "Mozilla/5.0"}
+        self.headers = { "User-Agent": "Mozilla/5.0" }
+        self.proxies = {}
+
+    def __init__(self, proxies:dict):
+        self.headers = { "User-Agent": "Mozilla/5.0" }
+        self.proxies = proxies        
 
     def read(self, **params):
-        resp = requests.post(self.url, headers=self.headers, data=params)
+        if not self.headers:
+            raise ValueError("Headers for read() is empty")
+        if self.proxies:
+            resp = requests.post(self.url, headers=self.headers, data=params, proxies=self.proxies)
+        else:
+            resp = requests.post(self.url, headers=self.headers, data=params)
         return resp
 
     @property

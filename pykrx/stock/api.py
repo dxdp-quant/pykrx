@@ -1,6 +1,5 @@
-# from pykrx.website import krx
-# from pykrx.website import naver
 from ..website import krx
+from ..website.krx.krx_proxy import Proxy
 from ..website import naver
 import datetime
 import inspect
@@ -61,6 +60,18 @@ def resample_ohlcv(df, freq, how):
             raise RuntimeError
     return df
 
+def register_proxy(proxy:dict):
+    """ Register proxy info to use for KRX API call
+    
+        {"http": "http://id:pw@ip:port", "https":"https://id:pw@ip:port" }
+        
+    """
+    Proxy().set(proxy)
+
+# TODO write this if change of header is required
+def register_header(header:dict):
+    """ Register header info to use for KRX API call"""
+    pass
 
 def get_nearest_business_day_in_a_week(date: str=None, prev: bool=True) -> str:
     """인접한 영업일을 조회한다.
