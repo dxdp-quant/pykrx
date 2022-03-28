@@ -560,7 +560,12 @@ def __get_market_trading_value_and_volume_by_investor(fromdate: str, todate: str
         df = krx.get_market_trading_value_and_volume_on_market_by_investor(fromdate, todate, ticker, etf, etn, elw)
     else:
         df  = krx.get_market_trading_value_and_volume_on_ticker_by_investor(fromdate, todate, ticker)
-    return df[key]
+    
+    if key != '':
+        return df[key]
+    else:
+        df.columns = ['_'.join(col) for col in df.columns.values ]
+        return df
 
 
 def get_market_trading_value_by_investor(fromdate: str, todate: str, ticker: str, etf: bool=False, etn: bool=False,
@@ -660,6 +665,11 @@ def get_market_trading_volume_by_investor(fromdate: str, todate: str, ticker: st
             은행          44279242     51690814    7411572
     """
     return __get_market_trading_value_and_volume_by_investor(fromdate, todate, ticker, etf, etn, elw, '거래량')
+
+def get_market_trading_value_and_volume_by_investor(fromdate: str, todate: str, ticker: str, etf: bool=False, etn: bool=False,
+                                          elw: bool=False) -> DataFrame:
+
+    return __get_market_trading_value_and_volume_by_investor(fromdate, todate, ticker, etf, etn, elw, '')   # empty key = both value and volume
 
 
 def get_market_trading_value_by_date(fromdate: str, todate: str, ticker: str, etf: bool=False, etn: bool=False,
@@ -1118,6 +1128,22 @@ def get_shorting_volume_by_ticker(date: str, market: str="KOSPI", include: list=
         return df['거래량']
 
     return df['거래량']
+
+@market_valid_check(["KOSPI", "KOSDAQ", "KONEX"])
+def get_shorting_value_and_volume_by_ticker(date: str, market: str="KOSPI", include: list=None) -> DataFrame:
+
+    if isinstance(date, datetime.datetime):
+        date = _datetime2string(date)
+
+    if include is None:
+        include = ["주식"]
+
+    df = krx.get_shorting_trading_value_and_volume_by_ticker(date, market, include)
+    if df.empty:
+        print("not valid date!")
+        return None
+
+    return df
 
 
 def get_shorting_volume_by_date(fromdate: str, todate: str, ticker: str) -> DataFrame:

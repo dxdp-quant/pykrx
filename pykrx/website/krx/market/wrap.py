@@ -77,15 +77,15 @@ def get_market_ohlcv_by_ticker(date: str, market: str="KOSPI") -> DataFrame:
 
     market = {"ALL": "ALL", "KOSPI": "STK", "KOSDAQ": "KSQ", "KONEX": "KNX"}[market]
     df = 전종목시세().fetch(date, market)
-    df = df[['ISU_SRT_CD', 'TDD_OPNPRC', 'TDD_HGPRC', 'TDD_LWPRC', 'TDD_CLSPRC', 'ACC_TRDVOL', 'ACC_TRDVAL', 'FLUC_RT']]
-    df.columns = ['티커', '시가', '고가', '저가', '종가', '거래량', '거래대금', '등락률']
+    df = df[['ISU_SRT_CD', 'TDD_OPNPRC', 'TDD_HGPRC', 'TDD_LWPRC', 'TDD_CLSPRC', 'ACC_TRDVOL', 'ACC_TRDVAL', 'FLUC_RT', 'MKTCAP', 'LIST_SHRS']]
+    df.columns = ['ticker', 'open', 'high', 'low', 'close', 'volume', 'value', 'delta', 'market_cap', 'total_shares']
     df = df.replace('[^-\w\.]', '', regex=True)
     df = df.replace('\-$', '0', regex=True)
     df = df.replace('', '0')
-    df = df.set_index('티커')
+    df = df.set_index('ticker')
     df = df.astype({
-        "시가":np.int32, "고가":np.int32, "저가":np.int32, "종가":np.int32,
-        "거래량":np.int32, "거래대금":np.int64, "등락률":np.float32 } )
+        "open":np.int32, "high":np.int32, "low":np.int32, "close":np.int32,
+        "volume":np.int32, "value":np.int64, "delta":np.float32, "market_cap":np.int64, "total_shares":np.int64} )
     return df
 
 
@@ -175,8 +175,8 @@ def get_market_fundamental_by_ticker(date: str, market: str="KOSPI") -> DataFram
     df = PER_PBR_배당수익률_전종목().fetch(date, market)
 
     df = df[['ISU_SRT_CD', 'BPS', 'PER', 'PBR', 'EPS', 'DVD_YLD', 'DPS']]
-    df.columns = ['티커', 'BPS', 'PER', 'PBR', 'EPS', 'DIV', 'DPS']
-    df.set_index('티커', inplace=True)
+    df.columns = ['ticker', 'BPS', 'PER', 'PBR', 'EPS', 'DIV', 'DPS']
+    df.set_index('ticker', inplace=True)
 
     df = df.replace('-', '0', regex=True)
     df = df.replace('', '0', regex=True)
@@ -366,12 +366,12 @@ def get_exhaustion_rates_of_foreign_investment_by_ticker(date: str, market: str,
     df = 외국인보유량_전종목().fetch(date, market, balance_limit)
 
     df = df[['ISU_SRT_CD', 'LIST_SHRS', 'FORN_HD_QTY', 'FORN_SHR_RT', 'FORN_ORD_LMT_QTY', 'FORN_LMT_EXHST_RT']]
-    df.columns = ['티커', '상장주식수', '보유수량', '지분율', '한도수량', '한도소진율']
+    df.columns = ['ticker', 'total_shares', 'foreigner_hold_vol', 'foreigner_hold_rate', 'foreigner_limit_vol', 'foreigner_limit_consumption_rate']
     df = df.replace('', '0', regex=True)
     df = df.replace(',', '', regex=True)
-    df = df.astype({"상장주식수": np.int64, "보유수량": np.int64, "지분율": np.float16,
-                    "한도수량": np.int64, "한도소진율": np.float16})
-    df = df.set_index('티커')
+    df = df.astype({"total_shares": np.int64, "foreigner_hold_vol": np.int64, "foreigner_hold_rate": np.float16,
+                    "foreigner_limit_vol": np.int64, "foreigner_limit_consumption_rate": np.float16})
+    df = df.set_index('ticker')
     return df.sort_index()
 
 
@@ -408,8 +408,8 @@ def get_market_trading_value_and_volume_on_ticker_by_investor(fromdate: str, tod
     df = 투자자별_거래실적_개별종목_기간합계().fetch(fromdate, todate, isin)
 
     df = df.set_index('INVST_TP_NM')
-    df.index.name = '투자자구분'
-    df.columns = pd.MultiIndex.from_product([['거래량', '거래대금'], ['매도','매수', '순매수']])
+    df.index.name = 'investor'
+    df.columns = pd.MultiIndex.from_product([['volume', 'value'], ['sell','buy', 'netbuy']])
     df = df.replace('[^-\w]', '', regex=True)
     df = df.replace('', '0')
     return df.astype(np.int64)
@@ -841,17 +841,17 @@ def get_shorting_trading_value_and_volume_by_ticker(date: str, market: str, incl
     df = 개별종목_공매도_거래_전종목().fetch(date, market, include)
 
     df = df.set_index('ISU_CD')
-    df.index.name = "티커"
+    df.index.name = "ticker"
     df = df[['CVSRTSELL_TRDVOL', 'ACC_TRDVOL', 'TRDVOL_WT', 'CVSRTSELL_TRDVAL', 'ACC_TRDVAL', 'TRDVAL_WT' ]]
-    df.columns = pd.MultiIndex.from_product([['거래량', '거래대금'], ['공매도','매수', '비중']])
+    df.columns = pd.MultiIndex.from_product([['volume', 'value'], ['short','v', 'ratio']])
     df = df.replace('[^-\w\.]', '', regex=True).replace('', '0')
     df = df.astype({
-        ("거래량"  , "공매도"): np.int64,
-        ("거래량"  , "매수"  ): np.int64,
-        ("거래량"  , "비중"  ): np.float32,
-        ("거래대금", "공매도"): np.int64,
-        ("거래대금", "매수"  ): np.int64,
-        ("거래대금", "비중"  ): np.float32
+        ("volume"  , "short"): np.int64,
+        ("volume"  , "v"  ): np.int64,
+        ("volume"  , "ratio"  ): np.float32,
+        ("value", "short"): np.int64,
+        ("value", "v"  ): np.int64,
+        ("value", "ratio"  ): np.float32
     })
     return df
 
@@ -999,16 +999,16 @@ def get_shorting_balance_by_ticker(date: str, market: str) -> DataFrame:
             282330        4794     17283906   757452000  2.730857e+12  0.029999
             138930      596477    325935246  3340271200  1.825237e+12  0.180054
     """
-    market = {"KOSPI": 1, "KOSDAQ": 2, "KONEX": 3}.get(market, 1)
+    market = {"KOSPI": 1, "KOSDAQ": 2, "KONEX": 6}.get(market, 1)
     df = 전종목_공매도_잔고().fetch(date, market)
 
     df = df[["ISU_CD", "BAL_QTY", "LIST_SHRS", "BAL_AMT", "MKTCAP", "BAL_RTO"]]
-    df.columns = ['티커', '공매도잔고', '상장주식수', '공매도금액', '시가총액', '비중']
-    df = df.set_index('티커')
+    df.columns = ['ticker', 'balance', 'total_shares', 'value', 'market_cap', 'ratio']
+    df = df.set_index('ticker')
     df = df.replace('[^-\w\.]', '', regex=True)
     df = df.replace('', 0)
-    df = df.astype({"공매도잔고": np.int64, "상장주식수": np.int64, "공매도금액": np.int64,
-                    "시가총액": np.float64, "비중": np.float16})
+    df = df.astype({"balance": np.int64, "total_shares": np.int64, "value": np.int64,
+                    "market_cap": np.float64, "ratio": np.float16})
     return df
 
 
