@@ -27,7 +27,7 @@ class 상장종목검색(KrxWebIo):
             3  KR7054620000     054620   APS홀딩스        KSQ     코스닥        KOSDAQ        16
             4  KR7265520007     265520    AP시스템        KSQ     코스닥        KOSDAQ        16
         """
-        result = self.read(mktsel=mktsel, searchText=searchText, typeNo=0)
+        result = self.read(locale="ko_KR", mktsel=mktsel, searchText=searchText, typeNo=0)
         return DataFrame(result['block1'])
 
 
@@ -65,13 +65,14 @@ class 개별종목시세(KrxWebIo):
     def bld(self):
         return "dbms/MDC/STAT/standard/MDCSTAT01701"
 
-    def fetch(self, strtDd: str, endDd: str, isuCd: str) -> DataFrame:
+    def fetch(self, strtDd: str, endDd: str, isuCd: str, adjStkPrc: int=1) -> DataFrame:
         """[12003] 개별종목 시세 추이 (수정종가 아님)
 
         Args:
             strtDd (str): 조회 시작 일자 (YYMMDD)
             endDd  (str): 조회 종료 일자 (YYMMDD)
             isuCd  (str): 조회 종목 ISIN
+            adjStkPrc  (int): 수정 종가 여부 (2:수정종가/1:단순종가)
 
         Returns:
             DataFrame: 일자별 시세 조회 결과
@@ -82,7 +83,7 @@ class 개별종목시세(KrxWebIo):
             3  2021/01/12     90,600          2          -400   -0.44     90,300    91,400    87,800  48,682,416  4,362,546,108,950  540,862,299,030,000  5,969,782,550
             4  2021/01/11     91,000          1         2,200    2.48     90,000    96,800    89,500  90,306,177  8,379,237,727,064  543,250,212,050,000  5,969,782,550
         """
-        result = self.read(isuCd=isuCd, strtDd=strtDd, endDd=endDd)
+        result = self.read(isuCd=isuCd, strtDd=strtDd, endDd=endDd, adjStkPrc=adjStkPrc)
         return DataFrame(result['output'])
 
 

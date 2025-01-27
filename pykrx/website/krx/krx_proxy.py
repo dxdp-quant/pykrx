@@ -17,11 +17,9 @@ class Proxy(object):
 		return cls.instance
 
 	def __init__(ins, firstInit = False, proxyDebug = False):
-
 		# bypass initialization when called from inner API
 		if not firstInit:
 			return
-
 		ins.enable_proxy = False
 		ins.proxy_token_updated = False
 		ins.token = None
@@ -80,13 +78,9 @@ class Proxy(object):
 		# TODO do not use index approach
 		if not ins.enable_proxy:
 			return EMPTY_PROXY_DICT
-
 		assert ins.proxy_token_updated == True
-
 		result = ( ins.proxy_list[ins.proxy_idx], ins.proxy_idx )
-
 		ins.proxy_idx = 0 if ins.proxy_idx == len(ins.proxy_list) - 1 else ins.proxy_idx + 1
-
 		# returns 
 		return result[0]
 	

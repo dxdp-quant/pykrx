@@ -117,7 +117,7 @@ def get_market_ticker_list(date: str=None, market: str="KOSPI") -> list:
     """
     if date is None:
         date = get_nearest_business_day_in_a_week()
-
+    print(date, market)
     s = krx.get_market_ticker_and_name(date, market)
     return s.index.to_list()
 
@@ -162,7 +162,6 @@ def __get_business_days_0(year: int, month: int):
 def __get_business_days_1(strt: str, last: str):
     df = krx.get_market_ohlcv_by_date(strt, last, "000020")
     return df.index.to_list()
-
 
 def get_previous_business_days(**kwargs) -> list:
     """과거의 영업일 조회

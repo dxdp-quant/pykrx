@@ -37,22 +37,19 @@ class KrxWebIo(Post):
         if resp_json is not None:
             isResultOk = True
 
-        if not isResultOk:
-            
+		# only retry when proxy is enabled
+        if not isResultOk and Proxy().enable_proxy:
             if self.current_retry >= self.MAX_RETRIES:
                 if DEBUG:
                     print("RETRY LIMIT EXCEEDED!")
                 raise Exception("Retry limit exceeded")
-
             # give it a try by re-registering proxy
             self.replaceProxy( Proxy().get() )
             self.current_retry += 1
             if DEBUG:
-                print(f"retrying : {self.current_retry}")
-            
+                print(f"proxy retrying : {self.current_retry}")
             # recursively call read() again
             return self.read( **params )
-
         else:
             return resp_json      
 

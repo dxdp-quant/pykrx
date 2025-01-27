@@ -246,7 +246,6 @@ def get_market_ticker_and_name(date: str, market: str="KOSPI") -> Series:
     """
     market = {"ALL": "ALL", "KOSPI": "STK", "KOSDAQ": "KSQ", "KONEX": "KNX"}. \
         get(market, "ALL")
-
     df = 전종목시세().fetch(date, market)
     df = df[['ISU_SRT_CD', 'ISU_ABBRV']]
     df.columns = ['티커', '종목명']
@@ -635,15 +634,20 @@ def get_index_ohlcv_by_date(fromdate: str, todate: str, ticker: str) -> DataFram
 
     df = 개별지수시세().fetch(ticker[1:], ticker[0], fromdate, todate)
     df = df[['TRD_DD', 'OPNPRC_IDX', 'HGPRC_IDX', 'LWPRC_IDX',
-             'CLSPRC_IDX', 'ACC_TRDVOL', 'ACC_TRDVAL']]
-    df.columns = ['날짜', '시가', '고가', '저가', '종가', '거래량', '거래대금']
+             'CLSPRC_IDX', 'ACC_TRDVOL', 'ACC_TRDVAL', 'MKTCAP']]
+    df.columns = ['date', 'open', 'high', 'low', 'close', 'volume', 'value', 'market_cap']
     df = df.replace('[^-\w\.]', '', regex=True)
-    df = df.replace('\-$', '0', regex=True)
-    df = df.replace('', '0')
-    df = df.set_index('날짜')
-    df = df.astype({'시가': np.float64, '고가': np.float64,
-                    '저가': np.float64, '종가': np.float64,
-                    '거래량': np.int64, '거래대금': np.int64})
+    
+    # NOT NULL constraint : drop when data is invalid
+    df = df[df.volume != '-']
+    #df = df.replace('\-$', '0', regex=True)
+    #df = df.replace('', '0')
+
+    df = df.set_index('date')
+    df = df.astype({'open': np.float64, 'high': np.float64,
+                    'low': np.float64, 'close': np.float64,
+                    'volume': np.int64, 'value': np.int64, 
+                    'market_cap': np.int64})
     df.index = pd.to_datetime(df.index, format='%Y%m%d')
     return df.sort_index()
 
@@ -703,7 +707,7 @@ def get_index_price_change_by_ticker(fromdate: str, todate: str, market: str) ->
     df.columns = ['지수명', '시가', '종가', '등락률', '거래량', '거래대금']
     df = df.set_index('지수명')
     df = df.replace('[^\w\.-]', '', regex=True)
-    df = df.replace('', 0)
+    #df = df.replace('', 0)
     df = df.astype({"시가": np.float64, "종가": np.float64, "등락률": np.float16, "거래량": np.int64, "거래대금": np.int64})
     return df
 
